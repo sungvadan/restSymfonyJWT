@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-
 /**
  * @Security("is_granted('ROLE_USER')")
  */
@@ -29,7 +28,6 @@ class ProgrammerController extends BaseController
      */
     public function newAction(Request $request)
     {
-
         $programmer = new Programmer();
         $form = $this->createForm(ProgrammerType::class, $programmer);
         $this->processForm($request, $form);
@@ -148,49 +146,5 @@ class ProgrammerController extends BaseController
         }
 
         return new Response(null, 204);
-    }
-
-    private function processForm(Request $request, FormInterface $form)
-    {
-        $data = json_decode($request->getContent(), true);
-        if ($data === null) {
-            $apiProblem = new ApiProblem(400, ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT);
-
-            throw new ApiProblemException($apiProblem);
-        }
-
-        $clearMissing = $request->getMethod() != 'PATCH';
-        $form->submit($data, $clearMissing);
-    }
-
-    private function getErrorsFromForm(FormInterface $form)
-    {
-        $errors = array();
-        foreach ($form->getErrors() as $error) {
-            $errors[] = $error->getMessage();
-        }
-
-        foreach ($form->all() as $childForm) {
-            if ($childForm instanceof FormInterface) {
-                if ($childErrors = $this->getErrorsFromForm($childForm)) {
-                    $errors[$childForm->getName()] = $childErrors;
-                }
-            }
-        }
-
-        return $errors;
-    }
-
-    private function throwApiProblemValidationException(FormInterface $form)
-    {
-        $errors = $this->getErrorsFromForm($form);
-
-        $apiProblem = new ApiProblem(
-            400,
-            ApiProblem::TYPE_VALIDATION_ERROR
-        );
-        $apiProblem->set('errors', $errors);
-
-        throw new ApiProblemException($apiProblem);
     }
 }

@@ -12,8 +12,8 @@ security:
             anonymous: true
             stateless: true
             guard:
-                authenticator:
-                    - jwt_token_authenticator
+                authenticators:
+                    - 'jwt_token_authenticator'
         main:
             pattern: ^/
             anonymous: true
@@ -25,7 +25,6 @@ security:
             logout:
                 # The route name the user can go to in order to logout
                 path: security_logout
-
 
     access_control:
         - { path: ^/_wdt|_profiler, roles: IS_AUTHENTICATED_ANONYMOUSLY }

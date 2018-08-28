@@ -2,12 +2,10 @@
 
 namespace AppBundle\Api;
 
-
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ResponseFactory
 {
-
     public function createResponse(ApiProblem $apiProblem)
     {
         $data = $apiProblem->toArray();
@@ -21,6 +19,7 @@ class ResponseFactory
             $apiProblem->getStatusCode()
         );
         $response->headers->set('Content-Type', 'application/problem+json');
+
         return $response;
     }
 }

@@ -2,10 +2,8 @@
 
 namespace AppBundle\Security;
 
-
 use AppBundle\Api\ApiProblem;
 use AppBundle\Api\ResponseFactory;
-use Behat\Mink\Exception\Exception;
 use Doctrine\ORM\EntityManager;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\TokenExtractor\AuthorizationHeaderTokenExtractor;
@@ -21,25 +19,14 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class JwtTokenAuthenticator extends AbstractGuardAuthenticator
 {
-
-    /**
-     * @var EntityManager
-     */
-    private $em;
-    /**
-     * @var JWTEncoderInterface
-     */
     private $jwtEncoder;
-    /**
-     * @var ResponseFactory
-     */
+    private $em;
     private $responseFactory;
 
     public function __construct(JWTEncoderInterface $jwtEncoder, EntityManager $em, ResponseFactory $responseFactory)
     {
-
-        $this->em = $em;
         $this->jwtEncoder = $jwtEncoder;
+        $this->em = $em;
         $this->responseFactory = $responseFactory;
     }
 
@@ -50,27 +37,28 @@ class JwtTokenAuthenticator extends AbstractGuardAuthenticator
             'Authorization'
         );
 
-            $token = $extractor->extract($request);
-            if(!$token){
-                return;
-            }
-            return $token;
+        $token = $extractor->extract($request);
+
+        if (!$token) {
+            return;
+        }
+
+        return $token;
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        try{
-            $data = $this->jwtEncoder->decode($credentials);
-            if($data === false){
-                throw new CustomUserMessageAuthenticationException('Invalid token');
-            }
+        $data = $this->jwtEncoder->decode($credentials);
 
-            $username = $data['username'];
-            return $this->em->getRepository('AppBundle:User')
-                ->findOneBy(['username' => $username]);
-        }catch (\Exception $exception){
-            return;
+        if ($data === false) {
+            throw new CustomUserMessageAuthenticationException('Invalid Token');
         }
+
+        $username = $data['username'];
+
+        return $this->em
+            ->getRepository('AppBundle:User')
+            ->findOneBy(['username' => $username]);
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -81,6 +69,7 @@ class JwtTokenAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         $apiProblem = new ApiProblem(401);
+        // you could translate this
         $apiProblem->set('detail', $exception->getMessageKey());
 
         return $this->responseFactory->createResponse($apiProblem);
@@ -88,7 +77,7 @@ class JwtTokenAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        // do nothing
+        // do nothing - let the controller be called
     }
 
     public function supportsRememberMe()
@@ -98,12 +87,14 @@ class JwtTokenAuthenticator extends AbstractGuardAuthenticator
 
     public function start(Request $request, AuthenticationException $authException = null)
     {
+        // called when authentication info is missing from a
+        // request that requires it
+
         $apiProblem = new ApiProblem(401);
-        $mesage = $authException ? $authException->getMessageKey() : 'Missing Credential';
-        $apiProblem->set('detail', $mesage);
+        // you could translate this
+        $message = $authException ? $authException->getMessageKey() : 'Missing credentials';
+        $apiProblem->set('detail', $message);
 
         return $this->responseFactory->createResponse($apiProblem);
     }
-
-
 }

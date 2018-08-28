@@ -3,6 +3,7 @@
 namespace AppBundle\Test;
 
 use AppBundle\Entity\Programmer;
+use AppBundle\Entity\Project;
 use AppBundle\Entity\User;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManager;
@@ -284,13 +285,32 @@ class ApiTestCase extends KernelTestCase
         return $user;
     }
 
-    protected function createProgrammer(array $data)
+    protected function getAuthorizedHeaders($username, $headers = array())
     {
+        $token = $this->getService('lexik_jwt_authentication.encoder')
+            ->encode(['username' => $username]);
+
+        $headers['Authorization'] = 'Bearer '.$token;
+
+        return $headers;
+    }
+
+    protected function createProgrammer(array $data, $ownerUsername = null)
+    {
+        if ($ownerUsername) {
+            $owner = $this->getEntityManager()
+                ->getRepository('AppBundle:User')
+                ->findOneBy(['username' => $ownerUsername]);
+        } else {
+            $owner = $this->getEntityManager()
+                ->getRepository('AppBundle:User')
+                ->findAny();
+        }
+
         $data = array_merge(array(
             'powerLevel' => rand(0, 10),
-            'user' => $this->getEntityManager()
-                ->getRepository('AppBundle:User')
-                ->findAny()
+            'user' => $owner,
+            'avatarNumber' => rand(1, 6)
         ), $data);
 
         $accessor = PropertyAccess::createPropertyAccessor();
@@ -303,6 +323,22 @@ class ApiTestCase extends KernelTestCase
         $this->getEntityManager()->flush();
 
         return $programmer;
+    }
+
+    /**
+     * @param string $name
+     * @return Project
+     */
+    protected function createProject($name)
+    {
+        $project = new Project();
+        $project->setName($name);
+        $project->setDifficultyLevel(rand(1, 10));
+
+        $this->getEntityManager()->persist($project);
+        $this->getEntityManager()->flush();
+
+        return $project;
     }
 
     /**
@@ -338,12 +374,4 @@ class ApiTestCase extends KernelTestCase
         return '/app_test.php'.$uri;
     }
 
-    protected function getAuthorizedHeaders($username, $headers= array())
-    {
-
-        $token = $this->getService('lexik_jwt_authentication.encoder')
-            ->encode(['username' => $username]);
-        $headers['Authorization'] = ' Bearer '.$token;
-        return $headers;
-    }
 }

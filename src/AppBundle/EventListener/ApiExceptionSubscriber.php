@@ -15,17 +15,16 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 class ApiExceptionSubscriber implements EventSubscriberInterface
 {
     private $debug;
-    private $logger;
-    /**
-     * @var ResponseFactory
-     */
+
     private $responseFactory;
 
-    public function __construct($debug, LoggerInterface $logger, ResponseFactory $responseFactory)
+    private $logger;
+
+    public function __construct($debug, ResponseFactory $responseFactory, LoggerInterface $logger)
     {
         $this->debug = $debug;
-        $this->logger = $logger;
         $this->responseFactory = $responseFactory;
+        $this->logger = $logger;
     }
 
     public function onKernelException(GetResponseForExceptionEvent $event)
