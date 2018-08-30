@@ -28,8 +28,8 @@ class BattleControllerTest extends ApiTestCase
         ], 'weaverryan');
 
         $data = array(
-            'project' => $project->getId(),
-            'programmer' => $programmer->getId()
+            'projectId' => $project->getId(),
+            'programmerId' => $programmer->getId()
         );
 
         $response = $this->client->post('/api/battles',[
