@@ -8,6 +8,13 @@ use AppBundle\Entity\Programmer;
 
 class ProgrammerRepository extends EntityRepository
 {
+    public function createQueryBuilderForUSer(User $user)
+    {
+        return $this->createQueryBuilder('programmer')
+            ->andWhere('programmer.user = :user')
+            ->setParameter('user', $user);
+    }
+
     /**
      * @param User $user
      * @return Programmer[]

@@ -24,8 +24,12 @@ class BattleController extends BaseController
      */
     public function newAction(Request $request)
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $battleModel = new BattleModel();
-        $form = $this->createForm(BattleType::class, $battleModel);
+        $form = $this->createForm(BattleType::class, $battleModel,[
+            'user' => $this->getUser()
+        ]);
         $this->processForm($request, $form);
         if (!$form->isValid()) {
             $this->throwApiProblemValidationException($form);
