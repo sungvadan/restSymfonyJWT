@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 use AppBundle\Annotation\Link;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 /**
  * Programmer
@@ -13,10 +14,12 @@ use AppBundle\Annotation\Link;
  * @ORM\Table(name="battle_programmer")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ProgrammerRepository")
  * @Serializer\ExclusionPolicy("all")
- * @Link(
- *  "self",
- *  route = "api_programmers_show",
- *  params = { "nickname": "object.getNickname()" }
+ * @Hateoas\Relation(
+ *     "self",
+ *     href=@Hateoas\Route(
+ *          "api_programmers_show",
+ *          parameters={"nickname": "expr(object.getNickname())"}
+ *     )
  * )
  */
 class Programmer
