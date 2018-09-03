@@ -40,12 +40,12 @@ class BattleControllerTest extends ApiTestCase
         $this->assertEquals(201, $response->getStatusCode());
         $this->asserter()->assertResponsePropertyExists($response, 'didProgrammerWin');
         $this->asserter()->assertResponsePropertyEquals($response, 'project',$project->getId());
-        $this->asserter()->assertResponsePropertyEquals($response, 'programmer','Fred');
-        $this->asserter()->assertResponsePropertyEquals($response, '_links.programmer.href',$this->adjustUri('/api/programmers/Fred'));
+//        $this->asserter()->assertResponsePropertyEquals($response, 'programmer','Fred');
+        $this->asserter()->assertResponsePropertyEquals($response, '_links.programmer',$this->adjustUri('/api/programmers/Fred'));
         $this->debugResponse($response);
         $this->asserter()->assertResponsePropertyEquals(
             $response,
-            '_embedded.programmer.nickname',
+            'programmer.nickname',
             'Fred'
         );
 //        $this->assertTrue($response->hasHeader('Location'));

@@ -19,7 +19,6 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *          "api_programmers_show",
  *          parameters={"nickname": "expr(object.getProgrammerNickname())"}
  *     ),
- *     embedded="expr(object.getProgrammer())"
  * )
  */
 class Battle
@@ -35,6 +34,7 @@ class Battle
     /**
      * @ORM\ManyToOne(targetEntity="Programmer")
      * @ORM\JoinColumn(nullable=false)
+     * @Serializer\Expose()
      */
     private $programmer;
 
