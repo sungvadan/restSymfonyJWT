@@ -2,6 +2,7 @@
 
 namespace Tests\AppBundle\Controller\Api;
 
+use AppBundle\Battle\BattleManager;
 use AppBundle\Test\ApiTestCase;
 
 class ProgrammerControllerTest extends ApiTestCase
@@ -59,6 +60,33 @@ class ProgrammerControllerTest extends ApiTestCase
             '_links.self',
             $this->adjustUri('/api/programmers/UnitTester')
         );
+    }
+
+    public function testFollowProgrammerBattlesLink()
+    {
+        $programmer = $this->createProgrammer(array(
+            'nickname' => 'UnitTester',
+            'avatarNumber' => 3,
+        ));
+
+        $project = $this->createProject('cool_project');
+        /** @var BattleManager $battleManager */
+        $battleManager = $this->getService('battle.battle_manager');
+        $battleManager->battle($programmer, $project);
+        $battleManager->battle($programmer, $project);
+        $battleManager->battle($programmer, $project);
+
+        $response = $this->client->get('/api/programmers/UnitTester', [
+            'headers' => $this->getAuthorizedHeaders('weaverryan')
+        ]);
+
+        $uri = $this->asserter()
+                    ->readResponseProperty($response, '_links.battles');
+        $response = $this->client->get($uri, [
+            'headers' => $this->getAuthorizedHeaders('weaverryan')
+        ]);
+        $this->asserter()->assertResponsePropertyExists($response, 'items');
+        $this->debugResponse($response);
     }
 
     public function testGETProgrammerDeep()
@@ -286,5 +314,40 @@ EOF;
         ]);
         $this->assertEquals(401, $response->getStatusCode());
         $this->assertEquals('application/problem+json', $response->getHeader('Content-Type')[0]);
+    }
+
+    public function testEditTagLine()
+    {
+        $this->createProgrammer(array(
+            'nickname' => 'CowboyCoder',
+            'avatarNumber' => 5,
+            'tagLine' => 'The original CowboyCoder',
+        ));
+
+
+        $response = $this->client->put('/api/programmers/CowboyCoder/tagline',[
+            'headers' => $this->getAuthorizedHeaders('weaverryan'),
+            'body' => "New Tag Line"
+        ]);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('New Tag Line', (string) $response->getBody());
+    }
+
+    public function testPowerUp()
+    {
+        $this->createProgrammer(array(
+            'nickname' => 'CowboyCoder',
+            'avatarNumber' => 5,
+            'powerLevel' => 10,
+        ));
+
+
+        $response = $this->client->post('/api/programmers/CowboyCoder/powerup',[
+            'headers' => $this->getAuthorizedHeaders('weaverryan'),
+        ]);
+        $this->assertEquals(200, $response->getStatusCode());
+        $powerLevel = $this->asserter()->readResponseProperty($response, 'powerLevel');
+
     }
 }
